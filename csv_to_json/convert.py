@@ -1,3 +1,8 @@
+# Utilizando un archivo data.csv de metadata de productos exportado desde woocommerce
+# mediante la interfaz web, y un archivo libros.json obtenido del programa de scraping,
+# genera un output.csv con las mismas llaves de data.csv (algunas hardcodeadas aquí)
+# basado en el metadata de libros.json
+
 import pandas as pd
 import json
 from urllib.parse import urlsplit
