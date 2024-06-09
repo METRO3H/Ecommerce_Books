@@ -1,3 +1,5 @@
+# Script de prueba usado para comparar entre dos resultados de scraping distintos
+
 import json
 
 with open("libros-old.json") as file:
