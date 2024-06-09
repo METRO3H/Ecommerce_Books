@@ -62,8 +62,8 @@ libros_df = libros_df.drop(trash_keys, axis="columns")
 # Add missing keys from original as nan
 missing_keys = [x for x in df.columns if x not in libros_df]
 for x in missing_keys:
-    libros_df[x] = df[x][0]
-    # libros_df[x] = None
+    libros_df[x] = None
+    # libros_df[x] = df[x][0]
 
 # Reorder columns to fit original order
 libros_df = libros_df[df.columns]
