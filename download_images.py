@@ -4,6 +4,7 @@ import os
 import asyncio
 import aiohttp
 import aiofiles
+import sqlite3
 
 async def Download_Image(url, output_folder, session):
     image_name = url.split('/')[-1]  # Obtiene el nombre del archivo de la URL
@@ -31,7 +32,7 @@ def Get_Images():
     with open('libros.json') as json_data:
         data = json.load(json_data)
 
-    URL_Images = []
+    images = []
 
     # Iterar sobre cada item en tus datos
     for item in data:
@@ -39,44 +40,92 @@ def Get_Images():
         if 'mainImg' in item and item["product_type"] == "book" and item["stock_available"]:
             
             image_url = item['mainImg']
+            book_name = item["titleFriendly"]
+            product_id = item["id"]
             
             if image_url is None:
-                print(item["id"]," - ",item["titleFriendly"], " - ", image_url)
+                print(product_id, " - ", book_name, " - ", image_url)
                 none_counter += 1
                 continue
             
 
-            URL_Images.append(image_url)
-    print("None : ", none_counter)
-    return URL_Images
-
-def remove_images(URL_Images):
-    # Obtener lista de archivos en el directorio de imágenes
-    image_files = os.listdir(output_folder)
-    
-    # Filtrar imágenes que no están en la lista de IDs de libros
-    for image_file in image_files:
-        # Extraer el ID del nombre del archivo
-        image_id = os.path.splitext(image_file)[0]
-
-        # Si el ID no está en la lista de IDs de libros, eliminar el archivo
-        if image_id not in URL_Images:
-            file_path = os.path.join(output_folder, image_file)
-            os.remove(file_path)
-            print(f'Eliminado: {file_path}')
+            images.append({
+                "book_name" : book_name,
+                "file_name" : image_url.split("/")[-1],
+                "URL" : image_url,
+                "product_id" : product_id
+            })
             
-    if not os.path.exists(output_folder):
-        os.makedirs(output_folder)
+    print("None : ", none_counter)
+    
+    return images
+
+#LE FALTA
+def filter_images(images):
+    conn = sqlite3.connect('database/database.db')
+    cursor = conn.cursor()
+    query = """
+    --sql
+    SELECT book_name, file_name, url, product_id FROM covers
+    ;
+    """
+    cursor.execute(query)
+    saved_images = cursor.fetchall()
+    
+    conn.close()
+    
+    columns = [description[0] for description in cursor.description]
+    
+    saved_images_dictionary = []
+    
+    for saved_image in saved_images:
+        dict_row = dict(zip(columns, saved_image))
+        saved_images_dictionary.append(dict_row)
+
+    #missing_images = [item for item in images if item not in saved_images_dictionary]
+    
+    saved_product_ids = {item['product_id'] for item in saved_images_dictionary}
+    
+    missing_images  = [item for item in images if item['product_id'] not in saved_product_ids]
+    
+    print(missing_images)
+    
+    return
+
+def insert_images(images):
+    conn = sqlite3.connect('database/database.db')
+    cursor = conn.cursor()
+    query = """
+    --sql
+    INSERT INTO covers (book_name, file_name, url, product_id) 
+    VALUES (?, ?, ?, ?)
+    ;
+    """
+    
+    for image in images:
+        
+        book_name = image["book_name"]
+        file_name = image["file_name"]
+        URL = image['URL']
+        product_id = image["product_id"]
+        
+        cursor.execute(query, (book_name, file_name, URL, product_id,))
+
+    conn.commit()
+    conn.close()
+    
     return
 
 output_folder = 'images'
-URL_Images = Get_Images()
+images = Get_Images()
+filter_images(images)
+#insert_images(images)
 
 async def main():
     async with aiohttp.ClientSession() as session:
-        for i , URL in enumerate(URL_Images):
-            await Download_Image(URL, output_folder, session)
-            print("Download", i+1,"/",len(URL_Images))
+        for i , image in enumerate(images):
+            await Download_Image(image["URL"], output_folder, session)
+            print("Download", i+1,"/",len(images))
             
             
 asyncio.run(main())          
