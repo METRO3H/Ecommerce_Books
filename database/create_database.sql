@@ -4,7 +4,7 @@ CREATE TABLE "covers" (
 	"book_name"	TEXT NOT NULL,
 	"file_name"	TEXT NOT NULL,
 	"url"	TEXT NOT NULL,
-	"product_id" TEXT NOT NULL UNIQUE,
+	"product_id" INTEGER NOT NULL UNIQUE,
 	
 	PRIMARY KEY("id" AUTOINCREMENT)
 );

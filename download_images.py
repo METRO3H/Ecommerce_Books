@@ -13,8 +13,6 @@ async def Download_Image(url, output_folder, session):
     if os.path.exists(image_path):
         return
         
-
-    
     async with session.get(url) as response:
         
         if response.status == 200:
@@ -24,7 +22,7 @@ async def Download_Image(url, output_folder, session):
             async with aiofiles.open(image_path, mode="wb") as file:
                 await file.write(content)
 
-    return
+    return 
 
 
 def Get_Images():
@@ -82,15 +80,17 @@ def filter_images(images):
         dict_row = dict(zip(columns, saved_image))
         saved_images_dictionary.append(dict_row)
 
-    #missing_images = [item for item in images if item not in saved_images_dictionary]
+    # for i in range(10):
+    #     print("Images : ", json.dumps(images[i], indent=2))
+    #     print("Saved images : ", json.dumps(saved_images_dictionary[i], indent=2))
+        
+    # missing_images = [item for item in images if item not in saved_images_dictionary]
     
     saved_product_ids = {item['product_id'] for item in saved_images_dictionary}
     
     missing_images  = [item for item in images if item['product_id'] not in saved_product_ids]
     
-    print(missing_images)
-    
-    return
+    return missing_images
 
 def insert_images(images):
     conn = sqlite3.connect('database/database.db')
@@ -118,14 +118,22 @@ def insert_images(images):
 
 output_folder = 'images'
 images = Get_Images()
-filter_images(images)
-#insert_images(images)
+missing_images = filter_images(images)
+missing_images_length = len(missing_images)
+message = f"There are {missing_images_length} images to download"
 
+if missing_images == 0:
+    exit
+    
+insert_images(images)
+
+successful_downloads = []
+failed_downloads = []
 async def main():
     async with aiohttp.ClientSession() as session:
-        for i , image in enumerate(images):
+        for i , image in enumerate(missing_images):
             await Download_Image(image["URL"], output_folder, session)
-            print("Download", i+1,"/",len(images))
+            print("Download", i+1,"/",len(missing_images))
             
             
 asyncio.run(main())          
