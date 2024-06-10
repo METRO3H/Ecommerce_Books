@@ -2,7 +2,7 @@
 import sqlite3
 
 def insert_images(images):
-    conn = sqlite3.connect('../database/database.db')
+    conn = sqlite3.connect('database/database.db')
     cursor = conn.cursor()
     query = """
     --sql
