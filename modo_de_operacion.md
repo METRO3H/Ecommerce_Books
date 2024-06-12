@@ -10,4 +10,7 @@ Scrapea todos los productos de axon y los pone en libros.json
 5. Elimina todo dentro de downloads/
 
 ## 3. import_to_wordpress.py
-Aún no definido, investigando CLI de Woocommerce
+* [Importación con WordPress Importer](https://github.com/woocommerce/woocommerce/issues/21624#issuecomment-873089367)
+* Habrá que escribir un generador del formato de productos de Woocommerce (en XML).
+    1. Extraer libros de la base de datos
+    2. Importarlos con WordPress Importer como en el link del punto anterior
