@@ -43,7 +43,7 @@ def handle_processes(processes, id_map) -> bool:
                 json.dump(id_map, file)
     return success
 
-def import_to_wordpress(wordpress_url):
+def import_to_wordpress(wordpress_url, wordpress_path):
     print("Loading libros.json")
     with open("libros.json") as file:
         libros = json.load(file)
@@ -75,10 +75,10 @@ def import_to_wordpress(wordpress_url):
                 print(f"Books {i}-{i + SIMULTANEOUS_PROCESSES} / {len(libros)}")
             if str(libro["id"]) in id_map:
                 print(f"Updating book {libro['id']} {libro['titleFriendly']}")
-                cli = ["wp", "wc", "product", "update", "--porcelain", id_map[str(libro["id"])]]
+                cli = ["wp", f"--path={wordpress_path}", "wc", "product", "update", "--porcelain", id_map[str(libro["id"])]]
             else:
                 print(f"Adding book {libro['titleFriendly']}")
-                cli = ["wp", "wc", "product", "create", "--porcelain"]
+                cli = ["wp", f"--path={wordpress_path}", "wc", "product", "create", "--porcelain"]
 
             for key, value in arg_map.items():
                 add_arg(cli, key, libro[value])
@@ -111,4 +111,8 @@ if __name__ == "__main__":
         wordpress_url = "http://localhost"
     else:
         wordpress_url = sys.argv[1]
-    import_to_wordpress(wordpress_url)
+        if len(sys.argv) < 3:
+            wordpress_path = "."
+        else:
+            wordpress_path = sys.argv[2]
+    import_to_wordpress(wordpress_url, wordpress_path)
