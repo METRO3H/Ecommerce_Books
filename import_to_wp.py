@@ -9,6 +9,11 @@ from urllib.parse import urlsplit
 import itertools
 import sys
 
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
 SIMULTANEOUS_PROCESSES = 10
 
 def add_arg(cli: list[str], key: str, value: str) -> None:
@@ -75,10 +80,10 @@ def import_to_wordpress(wordpress_url, wordpress_path):
                 print(f"Books {i}-{i + SIMULTANEOUS_PROCESSES} / {len(libros)}")
             if str(libro["id"]) in id_map:
                 print(f"Updating book {libro['id']} {libro['titleFriendly']}")
-                cli = ["wp", f"--path={wordpress_path}", "wc", "product", "update", "--porcelain", id_map[str(libro["id"])]]
+                cli = ["wp", f"--path={wordpress_path}", "--user=bob","wc", "product", "update", "--porcelain", id_map[str(libro["id"])]]
             else:
                 print(f"Adding book {libro['titleFriendly']}")
-                cli = ["wp", f"--path={wordpress_path}", "wc", "product", "create", "--porcelain"]
+                cli = ["wp", f"--path={wordpress_path}", "--user=bob","wc", "product", "create", "--porcelain"]
 
             for key, value in arg_map.items():
                 add_arg(cli, key, libro[value])
@@ -107,12 +112,17 @@ def import_to_wordpress(wordpress_url, wordpress_path):
         handle_processes(processes, id_map)
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        wordpress_url = "http://localhost"
-    else:
-        wordpress_url = sys.argv[1]
-        if len(sys.argv) < 3:
-            wordpress_path = "."
-        else:
-            wordpress_path = sys.argv[2]
+    
+    wordpress_url = os.getenv('wordpress_url')
+    wordpress_path = os.getenv('wordpress_path')
+
+    # if len(sys.argv) < 2:
+    #     wordpress_url = "http://localhost"
+    # else:
+    #     wordpress_url = sys.argv[1]
+    #     if len(sys.argv) < 3:
+    #         wordpress_path = "."
+    #     else:
+    #         wordpress_path = sys.argv[2]
+    
     import_to_wordpress(wordpress_url, wordpress_path)
