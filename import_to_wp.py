@@ -78,7 +78,7 @@ def import_to_wordpress(wordpress_url, wordpress_path, wordpress_user):
             if not libro.get("themes"):
                 continue
             if i % SIMULTANEOUS_PROCESSES == 0:
-                print(f"Tags of books {i}-{i + SIMULTANEOUS_PROCESSES} / {len(libros)}")
+                print(f"Tags of books {i}-{i + SIMULTANEOUS_PROCESSES - 1} / {len(libros)}")
             for tag_id, tag_name in zip(libro["themes"], libro["themes_text"]):
                 if str(tag_id) in tag_map:
                     continue
@@ -101,7 +101,7 @@ def import_to_wordpress(wordpress_url, wordpress_path, wordpress_user):
         print("Importing products")
         for i, libro in enumerate(libros):
             if i % SIMULTANEOUS_PROCESSES == 0:
-                print(f"Books {i}-{i + SIMULTANEOUS_PROCESSES} / {len(libros)}")
+                print(f"Books {i}-{i + SIMULTANEOUS_PROCESSES - 1} / {len(libros)}")
             if str(libro["id"]) in id_map:
                 print(f"Updating book {libro['id']} {libro['titleFriendly']}")
                 cli = ["wp", f"--path={wordpress_path}", f"--user={wordpress_user}", "wc", "product", "update", "--porcelain", id_map[str(libro["id"])]]
