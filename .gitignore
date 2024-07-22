@@ -3,4 +3,5 @@ libros.json
 __pycache__
 database.db
 id_map.json
+tag_map.json
 .env
