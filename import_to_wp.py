@@ -16,23 +16,6 @@ SIMULTANEOUS_PROCESSES = 10
 def add_arg(cli: list[str], key: str, value: str) -> None:
     cli.append(f"--{key}={value}")
 
-# def get_ids() -> dict[str, str]:
-#     """Returns a map from original ids to wordpress ids"""
-#     result = {}
-#     for i in itertools.count(1):
-#         print(f"Page {i}")
-#         cli = ["wp", "wc", "product", "list", "--format=json", "--fields=id,attributes", "--per_page=100", f"--page={i}"]
-#         output = subprocess.run(cli, stdout=subprocess.PIPE).stdout
-#         products = json.loads(output)
-#         if not products:
-#             break
-#         for product in products:
-#             for attribute in product["attributes"]:
-#                 if attribute["name"] == "original_id":
-#                     original_id = attribute["options"][0]
-#                     result[original_id] = str(product["id"])
-#     return result
-
 def handle_processes(processes, id_map) -> bool:
     success = True
     for id, process in processes.items():
