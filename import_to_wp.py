@@ -45,7 +45,7 @@ def handle_processes(processes, id_map) -> bool:
                 json.dump(id_map, file)
     return success
 
-def import_to_wordpress(wordpress_url, wordpress_path):
+def import_to_wordpress(wordpress_url, wordpress_path, wordpress_user):
     print("Loading libros.json")
     with open("libros.json") as file:
         libros = json.load(file)
@@ -77,10 +77,10 @@ def import_to_wordpress(wordpress_url, wordpress_path):
                 print(f"Books {i}-{i + SIMULTANEOUS_PROCESSES} / {len(libros)}")
             if str(libro["id"]) in id_map:
                 print(f"Updating book {libro['id']} {libro['titleFriendly']}")
-                cli = ["wp", f"--path={wordpress_path}", "--user=bob","wc", "product", "update", "--porcelain", id_map[str(libro["id"])]]
+                cli = ["wp", f"--path={wordpress_path}", f"--user={wordpress_user}", "wc", "product", "update", "--porcelain", id_map[str(libro["id"])]]
             else:
                 print(f"Adding book {libro['titleFriendly']}")
-                cli = ["wp", f"--path={wordpress_path}", "--user=bob","wc", "product", "create", "--porcelain"]
+                cli = ["wp", f"--path={wordpress_path}", f"--user={wordpress_user}", "wc", "product", "create", "--porcelain"]
 
             for key, value in arg_map.items():
                 add_arg(cli, key, libro[value])
@@ -112,6 +112,7 @@ if __name__ == "__main__":
     load_dotenv()
     wordpress_url = os.getenv("WORDPRESS_URL")
     wordpress_path = os.getenv("WORDPRESS_PATH")
+    wordpress_user = os.getenv("WORDPRESS_USER")
 
     # if len(sys.argv) < 2:
     #     wordpress_url = "http://localhost"
@@ -122,4 +123,4 @@ if __name__ == "__main__":
     #     else:
     #         wordpress_path = sys.argv[2]
 
-    import_to_wordpress(wordpress_url, wordpress_path)
+    import_to_wordpress(wordpress_url, wordpress_path, wordpress_user)
