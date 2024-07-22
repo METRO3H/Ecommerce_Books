@@ -74,6 +74,7 @@ def import_to_wordpress(wordpress_url, wordpress_path, wordpress_user):
     try:
         processes = {}
         print("Importing tags")
+        quitting = False
         for i, libro in enumerate(libros):
             if not libro.get("themes"):
                 continue
@@ -90,8 +91,11 @@ def import_to_wordpress(wordpress_url, wordpress_path, wordpress_user):
                 if (i + 1) % SIMULTANEOUS_PROCESSES == 0:
                     if not handle_tag_processes(processes, tag_map):
                         print("Quitting")
+                        quitting = True
                         break
                     processes = {}
+            if quitting:
+                break
         handle_tag_processes(processes, tag_map)
     except KeyboardInterrupt:
         handle_tag_processes(processes, tag_map)
