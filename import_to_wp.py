@@ -110,8 +110,8 @@ def import_to_wordpress(wordpress_url, wordpress_path):
 
 if __name__ == "__main__":
     load_dotenv()
-    wordpress_url = os.getenv('wordpress_url')
-    wordpress_path = os.getenv('wordpress_path')
+    wordpress_url = os.getenv("WORDPRESS_URL")
+    wordpress_path = os.getenv("WORDPRESS_PATH")
 
     # if len(sys.argv) < 2:
     #     wordpress_url = "http://localhost"
