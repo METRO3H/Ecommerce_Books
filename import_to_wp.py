@@ -11,7 +11,7 @@ import sys
 import os
 from dotenv import load_dotenv
 
-SIMULTANEOUS_PROCESSES = 10
+SIMULTANEOUS_PROCESSES = 1
 
 def add_arg(cli: list[str], key: str, value: str) -> None:
     cli.append(f"--{key}={value}")
