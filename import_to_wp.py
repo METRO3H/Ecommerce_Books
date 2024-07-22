@@ -8,11 +8,8 @@ import subprocess
 from urllib.parse import urlsplit
 import itertools
 import sys
-
-from dotenv import load_dotenv
 import os
-
-load_dotenv()
+from dotenv import load_dotenv
 
 SIMULTANEOUS_PROCESSES = 10
 
@@ -112,7 +109,7 @@ def import_to_wordpress(wordpress_url, wordpress_path):
         handle_processes(processes, id_map)
 
 if __name__ == "__main__":
-    
+    load_dotenv()
     wordpress_url = os.getenv('wordpress_url')
     wordpress_path = os.getenv('wordpress_path')
 
@@ -124,5 +121,5 @@ if __name__ == "__main__":
     #         wordpress_path = "."
     #     else:
     #         wordpress_path = sys.argv[2]
-    
+
     import_to_wordpress(wordpress_url, wordpress_path)
