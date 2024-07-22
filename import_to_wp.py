@@ -42,8 +42,6 @@ def import_to_wordpress(wordpress_url, wordpress_path, wordpress_user):
         "stock_quantity": "stock_available",
     }
 
-    # print("Getting ids")
-    # ids = get_ids()
     try:
         with open("id_map.json") as file:
             id_map = json.load(file)
@@ -95,14 +93,5 @@ if __name__ == "__main__":
     wordpress_url = os.getenv("WORDPRESS_URL")
     wordpress_path = os.getenv("WORDPRESS_PATH")
     wordpress_user = os.getenv("WORDPRESS_USER")
-
-    # if len(sys.argv) < 2:
-    #     wordpress_url = "http://localhost"
-    # else:
-    #     wordpress_url = sys.argv[1]
-    #     if len(sys.argv) < 3:
-    #         wordpress_path = "."
-    #     else:
-    #         wordpress_path = sys.argv[2]
 
     import_to_wordpress(wordpress_url, wordpress_path, wordpress_user)
