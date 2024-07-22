@@ -206,8 +206,8 @@ while True:
         # else:
         #     query_limit //= 2
     else:
-        books += result["data"]["books"]
-        print(f"Fetched {len(books)} so far")
+        books += [book for book in result["data"]["books"] if book["stock_available"] and book["product_type"] in ["book", "ebook"]]
+        print(f"Saving {len(books)} so far")
         accumulated_skip += query_limit
     i += 1
 
