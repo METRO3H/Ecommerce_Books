@@ -98,7 +98,6 @@ def import_to_wordpress(wordpress_url, wordpress_path, wordpress_user):
             if original_image_url is not None:
                 image_filename = urlsplit(original_image_url).path.lstrip("/")
                 add_arg(cli, "images", json.dumps([{"src": f"{wordpress_url}/wp-content/uploads/manual_uploads/{image_filename}"}]))
-            add_arg(cli, "attributes", json.dumps([{"name": "original_id", "options": libro["id"]}]))
             processes[str(libro["id"])] = subprocess.Popen(cli, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
             if (i + 1) % SIMULTANEOUS_PROCESSES == 0:
                 if not handle_processes(processes, id_map):
