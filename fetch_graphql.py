@@ -129,6 +129,40 @@ query = '''
       stock_available
       # added:
       unavailable
+      # more added:
+      group_property_names
+      # brand
+      isVariantGroup
+      themes
+      themes_text
+      # dimensions
+      createdAt
+      has_description
+      has_picture
+      # discount
+      subjects
+      # pics
+      reposition_level
+      # attachments
+      deleted
+      clicks
+      # variant
+      # variantProduct
+      # suscription
+      # variantChildren
+      defaultVariant
+      # prepublication
+      # star
+      # banner
+      # allImg
+      multiplyBookSearch
+      deliveryTime
+      deliveryName
+      lastBuyPrice
+      exchangeRate
+      buyExpenses
+      isNotToPublish
+      sales
       __typename
     }
   }
@@ -138,7 +172,7 @@ variables = {
     "skip": 0,
     # "sort": "book.edition.year",
     # "order": -1,
-    # "product_type": ["book"],
+    # "product_type": ["book", "ebook"],
     # "lang": None,
     # "rangePrice": None,
     # "areas_of_interest": None,
