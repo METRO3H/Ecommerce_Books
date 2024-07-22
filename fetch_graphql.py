@@ -1,5 +1,6 @@
 import json
 from urllib.request import Request, urlopen
+from urllib.error import HTTPError
 
 headers = {
     "Host": "api.axon.es",
@@ -192,24 +193,29 @@ variables["limit"] = query_limit
 books = []
 i = 0
 accumulated_skip = 0
-while True:
-    print(f"Iteration {i}")
-    print(f"{query_limit = }")
-    variables["skip"] = initial_skip + accumulated_skip
-    request = Request(endpoint, data=json.dumps(payload, separators=(",", ":")).encode(), headers=headers)
-    with urlopen(request) as response:
-        result = json.loads(response.read())
-    if not result["data"]["books"]:
-        break
-        # if query_limit == 1:
-        #     break
-        # else:
-        #     query_limit //= 2
-    else:
-        books += [book for book in result["data"]["books"] if book["stock_available"] and book["product_type"] in ["book", "ebook"]]
-        print(f"Saving {len(books)} so far")
-        accumulated_skip += query_limit
-    i += 1
+try:
+    while True:
+        print(f"Iteration {i}")
+        print(f"{query_limit = }")
+        variables["skip"] = initial_skip + accumulated_skip
+        request = Request(endpoint, data=json.dumps(payload, separators=(",", ":")).encode(), headers=headers)
+        with urlopen(request) as response:
+            result = json.loads(response.read())
+        if not result["data"]["books"]:
+            break
+            # if query_limit == 1:
+            #     break
+            # else:
+            #     query_limit //= 2
+        else:
+            books += [book for book in result["data"]["books"] if book["stock_available"] and book["product_type"] in ["book", "ebook"]]
+            print(f"Saving {len(books)} so far")
+            accumulated_skip += query_limit
+        i += 1
 
-with open("libros.json", "w") as file:
-    json.dump(books, file)
+    with open("libros.json", "w") as file:
+        json.dump(books, file)
+except HTTPError as http_error:
+    errors = json.loads(http_error.read())["errors"]
+    for error in errors:
+        print(error["message"])
