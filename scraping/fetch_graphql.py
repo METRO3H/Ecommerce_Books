@@ -216,6 +216,8 @@ try:
     with open("libros.json", "w") as file:
         json.dump(books, file)
 except HTTPError as http_error:
+    if http_error.code != 400:
+        raise http_error
     errors = json.loads(http_error.read())["errors"]
     for error in errors:
         print(error["message"])
