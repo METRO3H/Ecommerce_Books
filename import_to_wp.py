@@ -100,7 +100,9 @@ def import_to_wordpress(wordpress_url, wordpress_path, wordpress_user):
             original_image_url = libro["mainImg"]
             if original_image_url is not None:
                 image_filename = urlsplit(original_image_url).path.lstrip("/")
-                add_arg(cli, "images", json.dumps([{"src": f"{wordpress_url}/wp-content/uploads/manual_uploads/{image_filename}"}]))
+                image_path = f"{wordpress_url}/wp-content/uploads/manual_uploads/{image_filename}"
+                
+                add_arg(cli, "images", json.dumps([{"src": image_path}]))
             if libro.get("themes"):
                 add_arg(cli, "tags", json.dumps([{"id": tag_map[str(tag_id)]} for tag_id in libro["themes"]]))
 
