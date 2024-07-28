@@ -61,7 +61,7 @@ def import_to_wordpress(wordpress_url, wordpress_path, wordpress_user):
 
                 process = subprocess.Popen(cli, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 if process.wait():
-                    print("Error. Quitting")
+                    print("Error")
                     quitting = True
                     break
                 output = process.stdout.read().decode()
@@ -106,7 +106,7 @@ def import_to_wordpress(wordpress_url, wordpress_path, wordpress_user):
 
             process = subprocess.Popen(cli, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             if process.wait():
-                print("Error. Quitting")
+                print("Error")
                 break
             output = process.stdout.read().decode()
             if output:
