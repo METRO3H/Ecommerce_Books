@@ -11,34 +11,8 @@ import sys
 import os
 from dotenv import load_dotenv
 
-SIMULTANEOUS_PROCESSES = 1
-
 def add_arg(cli: list[str], key: str, value: str) -> None:
     cli.append(f"--{key}={value}")
-
-def handle_product_processes(processes, id_map) -> bool:
-    success = True
-    for id, process in processes.items():
-        if process.wait():
-            success = False
-        output = process.stdout.read().decode()
-        if output:
-            id_map[str(id)] = output.strip()
-            with open("id_map.json", "w") as file:
-                json.dump(id_map, file)
-    return success
-
-def handle_tag_processes(processes, tag_map) -> bool:
-    success = True
-    for tag_id, process in processes.items():
-        if process.wait():
-            success = False
-        output = process.stdout.read().decode()
-        if output:
-            tag_map[str(tag_id)] = output.strip()
-            with open("tag_map.json", "w") as file:
-                json.dump(tag_map, file)
-    return success
 
 def import_to_wordpress(wordpress_url, wordpress_path, wordpress_user):
     print("Loading libros.json")
@@ -72,14 +46,12 @@ def import_to_wordpress(wordpress_url, wordpress_path, wordpress_user):
 
     print("Importing to wordpress")
     try:
-        processes = {}
         print("Importing tags")
         quitting = False
-        for i, libro in enumerate(libros):
+        for i, libro in enumerate(libros, 1):
             if not libro.get("themes"):
                 continue
-            if i % SIMULTANEOUS_PROCESSES == 0:
-                print(f"Tags of books {i}-{i + SIMULTANEOUS_PROCESSES - 1} / {len(libros)}")
+            print(f"Tags of book {i} / {len(libros)}")
             for tag_id, tag_name in zip(libro["themes"], libro["themes_text"]):
                 if str(tag_id) in tag_map:
                     continue
@@ -87,25 +59,25 @@ def import_to_wordpress(wordpress_url, wordpress_path, wordpress_user):
                 cli = ["wp", f"--path={wordpress_path}", f"--user={wordpress_user}", "wc", "product_tag", "create", "--porcelain"]
                 add_arg(cli, "name", tag_name)
 
-                processes[str(tag_id)] = subprocess.Popen(cli, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                if (i + 1) % SIMULTANEOUS_PROCESSES == 0:
-                    if not handle_tag_processes(processes, tag_map):
-                        print("Quitting")
-                        quitting = True
-                        break
-                    processes = {}
+                process = subprocess.Popen(cli, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                if process.wait():
+                    print("Error. Quitting")
+                    quitting = True
+                    break
+                output = process.stdout.read().decode()
+                if output:
+                    tag_map[str(tag_id)] = output.strip()
+                    with open("tag_map.json", "w") as file:
+                        json.dump(tag_map, file)
             if quitting:
                 break
-        handle_tag_processes(processes, tag_map)
     except KeyboardInterrupt:
-        handle_tag_processes(processes, tag_map)
+        pass
 
     try:
-        processes = {}
         print("Importing products")
-        for i, libro in enumerate(libros):
-            if i % SIMULTANEOUS_PROCESSES == 0:
-                print(f"Books {i}-{i + SIMULTANEOUS_PROCESSES - 1} / {len(libros)}")
+        for i, libro in enumerate(libros, 1):
+            print(f"Book {i} / {len(libros)}")
             if str(libro["id"]) in id_map:
                 print(f"Updating book {libro['id']} {libro['titleFriendly']}")
                 cli = ["wp", f"--path={wordpress_path}", f"--user={wordpress_user}", "wc", "product", "update", "--porcelain", id_map[str(libro["id"])]]
@@ -132,15 +104,17 @@ def import_to_wordpress(wordpress_url, wordpress_path, wordpress_user):
             if libro.get("themes"):
                 add_arg(cli, "tags", json.dumps([{"id": tag_map[str(tag_id)]} for tag_id in libro["themes"]]))
 
-            processes[str(libro["id"])] = subprocess.Popen(cli, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            if (i + 1) % SIMULTANEOUS_PROCESSES == 0:
-                if not handle_product_processes(processes, id_map):
-                    print("Quitting")
-                    break
-                processes = {}
-        handle_product_processes(processes, id_map)
+            process = subprocess.Popen(cli, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if process.wait():
+                print("Error. Quitting")
+                break
+            output = process.stdout.read().decode()
+            if output:
+                id_map[str(id)] = output.strip()
+                with open("id_map.json", "w") as file:
+                    json.dump(id_map, file)
     except KeyboardInterrupt:
-        handle_product_processes(processes, id_map)
+        pass
 
 if __name__ == "__main__":
     load_dotenv()
