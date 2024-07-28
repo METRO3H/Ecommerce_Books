@@ -5,3 +5,4 @@ database.db
 id_map.json
 tag_map.json
 .env
+*.json
