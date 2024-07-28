@@ -14,18 +14,20 @@ async def Process_Covers():
         os.makedirs(output_folder)
         
     images = Get_Images()
-    missing_images = filter_images(images)
-    missing_images_length = len(missing_images)
-
-    if missing_images_length == 0:
-        print(f"There are {missing_images_length} missing images to download")
-        return
+    # missing_images = filter_images(images)
+    # missing_images_length = len(missing_images)
+    # print(missing_images)
+    # if missing_images_length == 0:
+    #     print(f"There are {missing_images_length} missing images to download")
+    #     return
 
     successful_downloads = []
     failed_downloads = []
     percentage = 0
+    
     async with aiohttp.ClientSession() as session:
-        for image in missing_images:
+        for image in images:
+            # print(image["book_name"])
             result = await Download_Image(image, output_folder, session)
             if result is False:
                 failed_downloads.append(image)
@@ -34,10 +36,10 @@ async def Process_Covers():
             
             successful_downloads.append(image)
             
-            percentage = round((len(successful_downloads)/missing_images_length)*100, 1)
+            percentage = round((len(successful_downloads)/len(images))*100, 2)
             percentage = int(percentage) if percentage.is_integer() else percentage
-            
-            print(f"Download {len(successful_downloads)}/{missing_images_length} - {percentage}% : {image["book_name"]}")
+            ratio = f"{len(successful_downloads)}/{len(images)}"
+            print(f"Download {ratio} - {percentage}% : {image['book_name']}")
     
     print(f"{percentage}% of the images were downloaded") 
     
@@ -46,14 +48,14 @@ async def Process_Covers():
         print(len(failed_downloads), "Failed downloads : \n")   
         
         for image in failed_downloads:
-            print(f"-> {image["book_name"]} - {image["URL"]}")
+            print(f"-> {image['book_name']} - {image['URL']}")
     
-    total_rows_inserted = insert_images(successful_downloads)        
+    # total_rows_inserted = insert_images(successful_downloads)        
     
-    if total_rows_inserted == 1:
-        print("A cover was saved in the database")
-    else: 
-        print(f"{total_rows_inserted} covers were saved in the database")
+    # if total_rows_inserted == 1:
+    #     print("A cover was saved in the database")
+    # else: 
+    #     print(f"{total_rows_inserted} covers were saved in the database")
     
          
     
