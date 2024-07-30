@@ -41,14 +41,14 @@ async def Process_Covers():
             ratio = f"{len(successful_downloads)}/{len(images)}"
             print(f"Download {ratio} - {percentage}% : {image['book_name']}")
     
-    print(f"{percentage}% of the images were downloaded") 
+    print(f"{percentage}% of the images were downloaded!") 
     
     if len(failed_downloads) != 0:    
         
         print(len(failed_downloads), "Failed downloads : \n")   
         
         for image in failed_downloads:
-            print(f"-> {image['book_name']} - {image['URL']}")
+            print(f"-> {image['product_id']} - {image['book_name']} - {image['URL']}")
     
     # total_rows_inserted = insert_images(successful_downloads)        
     
