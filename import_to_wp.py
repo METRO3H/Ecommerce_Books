@@ -17,6 +17,29 @@ def add_arg(cli: list[str], key: str, value: str) -> None:
     # full_command = " ".join(cli)
     # print(full_command)
 
+def import_categories(wordpress_path, wordpress_user):
+    
+    categories = ["Libros", "E-Books"]
+    
+    for category in categories:
+        
+        print(f"Adding category '{category}'")
+        
+        cli = ["wp", f"--path={wordpress_path}", f"--user={wordpress_user}", "wc", "product_cat", "create", "--porcelain"]
+        
+        add_arg(cli, "name", category)
+        
+        process = subprocess.Popen(cli, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+        process.wait()
+        
+        if process.returncode != 0:
+            error = process.stderr.read()
+            print(error.decode())
+            continue
+
+        
+
 def import_to_wordpress(wordpress_url, wordpress_path, wordpress_user):
     print("Loading libros.json")
     with open("libros.json") as file:
@@ -49,6 +72,10 @@ def import_to_wordpress(wordpress_url, wordpress_path, wordpress_user):
 
     print("Importing to wordpress")
     try:
+        print("Importing categories")
+        import_categories(wordpress_path, wordpress_user)
+        
+        
         print("Importing tags")
         quitting = False
         for i, libro in enumerate(libros, 1):
@@ -107,8 +134,8 @@ def import_to_wordpress(wordpress_url, wordpress_path, wordpress_user):
             for key, value in arg_map.items():
                 libro_value = libro[value]
                 
-                if key != "stock_quantity":
-                    libro_value = f"'{libro_value}'"
+                # if key != "stock_quantity":
+                #     libro_value = f"'{libro_value}'"
                 
                 add_arg(cli, key, libro_value)
 
@@ -131,13 +158,28 @@ def import_to_wordpress(wordpress_url, wordpress_path, wordpress_user):
                 image_path = f"{wordpress_url}/wp-content/uploads/manual_uploads/{image_filename}"
                 image_param = json.dumps([{'src': image_path}])
                 add_arg(cli, "images", image_param)
+            
+            #arreglo a la mala por mientras XD
+            categories_map = {
+                "book": 4466,
+                "ebook": 4467
+            }
+            
+            if libro.get("product_type"):
+                category_param = json.dumps([{'id': categories_map.get(libro["product_type"])}])
+                add_arg(cli, "categories", category_param)
                 
+            
+            
+            
             if libro.get("themes"):
                 tags_param = json.dumps([{'id': tag_map[str(tag_id)]} for tag_id in libro['themes']])
-                
+                # tags_param = json.dumps([{'id': 2408}])
                 add_arg(cli, "tags", tags_param)
             
-        
+            # full_command = " ".join(cli)
+            # print(full_command)
+            
             process = subprocess.Popen(cli, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             
             process.wait()
