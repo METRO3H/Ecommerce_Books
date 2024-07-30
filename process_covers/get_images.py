@@ -17,15 +17,22 @@ def Get_Images():
             book_name = item["titleFriendly"]
             product_id = item["id"]
             
+            
             if image_url is None:
                 #print(product_id, " - ", book_name, " - ", image_url)
                 none_counter += 1
                 continue
             
-
+            file_name = image_url.split("/")[-1]
+            if str(product_id) == str(141208):
+                print(product_id)
+                print(image_url)
+                print(file_name)
+                
+                
             images.append({
                 "book_name" : book_name,
-                "file_name" : image_url.split("/")[-1],
+                "file_name" : file_name,
                 "URL" : image_url,
                 "product_id" : product_id
             })
