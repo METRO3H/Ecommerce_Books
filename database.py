@@ -5,7 +5,7 @@ from mysql.connector import Error
 from dotenv import load_dotenv
 import html
 
-class Database:
+class wp_database:
     def __init__(self):
         load_dotenv()
         self.config = {
@@ -20,8 +20,8 @@ class Database:
     def connect(self):
         try:
             self.connection = mysql.connector.connect(**self.config)
-            if self.connection.is_connected():
-                print('Conexión establecida a la base de datos MySQL')
+            # if self.connection.is_connected():
+            #     print('Conexión establecida a la base de datos MySQL')
         except Error as e:
             print(f'Error al conectar a MySQL: {e}')
 
@@ -99,17 +99,14 @@ class Database:
         return result
     
     
-    
-    
-    
     def close(self):
         if self.connection is not None and self.connection.is_connected():
             self.connection.close()
-            print('Conexión cerrada.')
+            # print('Conexión cerrada.')
 
 
 if __name__ == "__main__":
-    db = Database()
+    db = wp_database()
     
     query = """-- sql
     SELECT wp_terms.name, wp_terms.term_id

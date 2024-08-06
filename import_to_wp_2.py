@@ -7,8 +7,11 @@ import json
 import subprocess
 from urllib.parse import urlsplit
 import os
-from database import Database
+from database import wp_database
 from dotenv import load_dotenv
+from util.verbose_timer import verbose_time
+import re
+import time
 
 def add_arg(cli: list[str], key: str, value: str) -> None:
     cli.append(f"--{key}={value}")
@@ -26,15 +29,26 @@ def execute_command(cli):
         process.wait()
         
         if process.returncode != 0:
-            wp_error = process.stderr.read()
-            print(wp_error.decode())
-            return False
-        
-        return True    
+            wp_error = process.stderr.read().decode()
+            print(wp_error)
+            return [False, wp_error]
+
+        return [True, "Success!"]   
             
     except Exception as Error:
         print(Error)
-        return False
+        return [False, Error]
+
+def normalize_string(string_arg):
+    
+    # Eliminar saltos de línea y tabs
+    cleaned_string= re.sub(r'[\n\t\r]+', ' ', string_arg)
+    # Reemplazar múltiples espacios por un solo espacio
+    cleaned_string = re.sub(r'\s+', ' ', cleaned_string)
+    # Eliminar espacios al principio y al final del string
+    cleaned_string = cleaned_string.strip()
+    
+    return cleaned_string
 
 def import_categories(base_command, categories, db_categories_map):
 
@@ -53,12 +67,13 @@ def import_categories(base_command, categories, db_categories_map):
         
         add_arg(cli, "name", category)
         
-        result = execute_command(cli)
+        [status, message] = execute_command(cli)
         
         percentage = round((i / missing_categories_length)*100, 3)
         
-        if result is False:
+        if status is False:
             print(f"Category {i}/{missing_categories_length} - {percentage}% ERROR Adding : '{category}'")
+            print("  ", message)
             continue
         
         
@@ -74,7 +89,7 @@ def import_tags(base_command, db_tag_map, libros):
         tags = libro.get("themes_text")
         
         for tag in tags:
-            scrap_tags.add(tag)
+            scrap_tags.add(normalize_string(tag))
             
     
     missing_tags = {tag for tag in scrap_tags if tag not in db_tag_map}
@@ -97,10 +112,12 @@ def import_tags(base_command, db_tag_map, libros):
         
         add_arg(cli, "name", tag)
         
-        result = execute_command(cli)
+        [status, message] = execute_command(cli)
         
-        if result is False:
-            print(f"Tag {i}/{missing_tags_length} - {percentage}% ERROR Adding : '{tag}'")
+        if status is False:
+            print(f"Tag {i}/{missing_tags_length} - {percentage}% ERROR Adding :")
+            print(f"'{tag}'")
+            print("  ", message)
             continue
             
         print(f"Tag {i}/{missing_tags_length} - {percentage}% Added : '{tag}'")
@@ -132,7 +149,7 @@ def import_products(base_command, libros, db_categories_map, db_tag_map, db_prod
         cli = base_command + ["wc", "product"]
         
         if product_id:
-            cli.extend(["update", product_id]); action = "Updated"
+            cli.extend(["update", str(product_id)]); action = "Updated"
             
         else:
             cli.append("create"); action = "Created"
@@ -170,13 +187,13 @@ def import_products(base_command, libros, db_categories_map, db_tag_map, db_prod
             
             category_dic = categories_dic_map.get(product_category)
             category_id = db_categories_map.get(category_dic)
-            category_param = json.dumps([{'id': category_id}])
+            category_param = json.dumps([{'id': str(category_id)}])
             add_arg(cli, "categories", category_param)
         
         product_tags = libro.get("themes_text")
         
         if product_tags:
-            tags_param = [{'id': db_tag_map[tag]} for tag in product_tags]
+            tags_param = [{'id': str(db_tag_map[normalize_string(tag)])} for tag in product_tags]
             tags_param = json.dumps(tags_param)
         
             add_arg(cli, "tags", tags_param)
@@ -192,19 +209,21 @@ def import_products(base_command, libros, db_categories_map, db_tag_map, db_prod
         
         metadata_list = json.dumps(metadata_list)
         
-        add_arg(cli, "--meta_data", metadata_list)
+        add_arg(cli, "meta_data", metadata_list)
         
         cli.append("--porcelain")
-
-        result = execute_command(cli)
+            
+        [status, message] = execute_command(cli)
                 
-        if result is False:
+        if status is False:
             action = "ERROR"
             continue
         
-        product_name = product_name[:10] + "..." if len(product_name) > 10 else ""
+        product_name = product_name[:90] + "..." if len(product_name) > 90 else product_name
         
-        print(f"Book {i}/{libros_length} - {percentage}% - {action} : ({product_ean}, {product_name})")       
+        print(f"Book {i}/{libros_length} - {percentage}% - {action} : ({product_ean}, {product_name})")  
+        if status is False:
+            print("  ", message)   
         
 def import_to_wordpress(wordpress_url, wordpress_path, wordpress_user):
     
@@ -217,7 +236,7 @@ def import_to_wordpress(wordpress_url, wordpress_path, wordpress_user):
 
     libros = [libro for libro in libros if libro["product_type"] == "book" and libro["stock_available"]]
     
-    db = Database()
+    db = wp_database()
     db.connect()
     
     db_categories_map = db.get_all_categories(name_map = True)
@@ -228,24 +247,34 @@ def import_to_wordpress(wordpress_url, wordpress_path, wordpress_user):
     categories = ["Libros", "E-Books"]
     
     import_categories(base_command, categories, db_categories_map)
-  
+    
+    start_tag_import = time.time()
+    
     import_tags(base_command, db_tag_map, libros)
     
-    db.connect()
+    end_tag_import = time.time()
     
+    tag_import_time = end_tag_import - start_tag_import
+    print("\nTag importation : ", verbose_time(tag_import_time), "\n")
+    
+    db.connect()
     db_categories_map = db.get_all_categories(name_map = True)
     db_tag_map = db.get_all_tags(name_map = True)
     db_product_map = db.get_all_products(unique_key_map = True)
-    
     db.close()
+    
+    start_product_import = time.time()
     
     categories_dic_map = {
         "book": categories[0],
         "ebook": categories[1]
     }   
-    
     import_products(base_command, libros, db_categories_map, db_tag_map, db_product_map, categories_dic_map, wordpress_url)
-
+    
+    end_product_import = time.time()
+    
+    product_import_time = end_product_import - start_product_import
+    print("\nProduct importation : ", verbose_time(product_import_time), "\n")
 
 if __name__ == "__main__":
     load_dotenv()
