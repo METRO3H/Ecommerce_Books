@@ -209,8 +209,10 @@ def import_products(base_command, libros, db_categories_map, db_tag_map, db_prod
         add_arg(cli, "meta_data", metadata_list)
         
         cli.append("--porcelain")
-        full_command = " ".join(cli)
-        print(full_command)
+        
+        # full_command = " ".join(cli)
+        # print(full_command)
+        
         [status, message] = execute_command(cli)
                 
         if status is False:
