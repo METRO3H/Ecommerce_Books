@@ -10,6 +10,7 @@ import os
 from database import wp_database
 from dotenv import load_dotenv
 from util.verbose_timer import verbose_time
+from util.process_stats import process_stats
 import re
 import time
 
@@ -72,12 +73,12 @@ def import_categories(base_command, categories, db_categories_map):
         percentage = round((i / missing_categories_length)*100, 3)
         
         if status is False:
-            print(f"Category {i}/{missing_categories_length} - {percentage}% ERROR Adding : '{category}'")
+            print(f"Category {process_stats(i, missing_categories_length)} ERROR Adding : '{category}'")
             print("  ", message)
             continue
         
         
-        print(f"Category {i}/{missing_categories_length} - {percentage}% Added : '{category}'")
+        print(f"Category {process_stats(i, missing_categories_length)} Added : '{category}'")
         
     return
         
@@ -103,10 +104,7 @@ def import_tags(base_command, db_tag_map, libros):
     missing_tags_length = len(missing_tags)
     
     for i, tag in enumerate(missing_tags, 1):
-        
-        percentage = round((i / missing_tags_length)*100, 3)
-       
-        
+               
         cli = base_command + ["wc", "product_tag", "create", "--porcelain"]
         
         
@@ -115,12 +113,12 @@ def import_tags(base_command, db_tag_map, libros):
         [status, message] = execute_command(cli)
         
         if status is False:
-            print(f"Tag {i}/{missing_tags_length} - {percentage}% ERROR Adding :")
+            print(f"Tag {process_stats(i, missing_tags_length)} ERROR Adding :")
             print(f"'{tag}'")
             print("  ", message)
             continue
             
-        print(f"Tag {i}/{missing_tags_length} - {percentage}% Added : '{tag}'")
+        print(f"Tag {process_stats(i, missing_tags_length)} Added : '{tag}'")
         
     return
 
@@ -139,7 +137,6 @@ def import_products(base_command, libros, db_categories_map, db_tag_map, db_prod
     
     for i, libro in enumerate(libros, start=1):
 
-        percentage = round((i/libros_length)*100, 3)
         product_ean = libro["ean"]
         product_name = libro["title"]
         
@@ -221,7 +218,7 @@ def import_products(base_command, libros, db_categories_map, db_tag_map, db_prod
         
         product_name = product_name[:90] + "..." if len(product_name) > 90 else product_name
         
-        print(f"Book {i}/{libros_length} - {percentage}% - {action} : ({product_ean}, {product_name})")  
+        print(f"Book {process_stats(i, libros_length)} - {action} : ({product_ean}, {product_name})")  
         if status is False:
             print("  ", message)   
         
