@@ -1,16 +1,19 @@
 import mysql.connector
-
+from dotenv import load_dotenv
+import os
 def get_table_status(cursor):
     cursor.execute("SHOW TABLE STATUS")
     return {row['Name']: (row['Rows'], row['Data_length']) for row in cursor.fetchall()}
 
 def main():
+    load_dotenv()
     # Conectar a la base de datos
     conn = mysql.connector.connect(
-        host="localhost",
-        user="tu_usuario",
-        password="tu_contraseña",
-        database="tu_base_de_datos"
+        database = os.getenv("DB_NAME"),
+        unix_socket = os.getenv("DB_SOCKET"),
+        user = os.getenv("DB_USER"),
+        password = os.getenv("DB_PASSWORD"),
+        raise_on_warnings = True
     )
     cursor = conn.cursor(dictionary=True)
 
