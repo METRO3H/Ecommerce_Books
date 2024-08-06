@@ -9,11 +9,19 @@ class wp_database:
         load_dotenv()
         self.config = {
             'database': os.getenv("DB_NAME"),
-            'unix_socket': os.getenv("DB_SOCKET"),
             'user': os.getenv("DB_USER"),
             'password': os.getenv("DB_PASSWORD"),
             'raise_on_warnings': True
         }
+        
+        db_socket = os.getenv("DB_SOCKET")
+        db_port = os.getenv("DB_PORT")
+        
+        if db_socket:
+            self.config["unix_socket"] = db_socket
+        else:
+            self.config["port"] = db_port
+            
         self.connection = None
 
     def connect(self):
