@@ -11,6 +11,7 @@ from database import wp_database
 from dotenv import load_dotenv
 from util.verbose_timer import verbose_time
 from util.process_stats import process_stats
+from util.color import color, process_print_division 
 import re
 import time
 
@@ -52,16 +53,20 @@ def normalize_string(string_arg):
     return cleaned_string
 
 def import_categories(base_command, categories, db_categories_map):
-
+    
+    print(color("title_card", " Script "), "Starting the", color("blue",f"Category"), "import process!")
+    
+    start_import = time.time()
+    
     missing_categories = {category for category in categories if category not in db_categories_map}
-    print("-------------------------- Checking Categories --------------------------")
+    print(color("magneta", "[Status] Checking Categories..."))
     
     if not missing_categories:
-        print("All Expected Categories Found!")
+        print(color("green", "[Status] All Expected Categories Found!"))
         return
         
     missing_categories_length = len(missing_categories) 
-    
+    print()
     for i, category in enumerate(missing_categories, start=1):
         
         cli = base_command + ["wc", "product_cat", "create", "--porcelain"]
@@ -70,20 +75,24 @@ def import_categories(base_command, categories, db_categories_map):
         
         [status, message] = execute_command(cli)
         
-        percentage = round((i / missing_categories_length)*100, 3)
-        
-        if status is False:
-            print(f"Category {process_stats(i, missing_categories_length)} ERROR Adding : '{category}'")
-            print("  ", message)
+        if not status:
+            print(color("red", f"[status] Category {process_stats(i, missing_categories_length)} : '{category}'"))
+            print(color("red", f"   --> {message}"))
             continue
         
-        
-        print(f"Category {process_stats(i, missing_categories_length)} Added : '{category}'")
-        
+        print(color("green","[status]"), f"Category {process_stats(i, missing_categories_length)} : '{category}'")
+    
+    end_import = time.time()
+    
+    print(color("cyan", f"\n[Status] Process completed in {verbose_time(end_import - start_import)}")) 
+    
     return
         
 def import_tags(base_command, db_tag_map, libros):
     
+    print(color("title_card", " Script "), "Starting the", color("blue",f"Tag"), "import process!")
+    
+    start_import = time.time()
     scrap_tags = set()
     
     for libro in libros:
@@ -94,46 +103,48 @@ def import_tags(base_command, db_tag_map, libros):
             
     
     missing_tags = {tag for tag in scrap_tags if tag not in db_tag_map}
-    
-    print("-------------------------- Checking Tags --------------------------")
-    
+
+    print(color("magneta", "[Status] Checking Tags..."))
     if not missing_tags:
-        print("All Expected Tags Found!")
+        print(color("green", "[Status] All Expected Tags Found!"))
         return
-        
-    missing_tags_length = len(missing_tags)
     
+    missing_tags_length = len(missing_tags)
+    print()
     for i, tag in enumerate(missing_tags, 1):
-               
+
         cli = base_command + ["wc", "product_tag", "create", "--porcelain"]
-        
-        
+
         add_arg(cli, "name", tag)
         
         [status, message] = execute_command(cli)
         
-        if status is False:
-            print(f"Tag {process_stats(i, missing_tags_length)} ERROR Adding :")
-            print(f"'{tag}'")
-            print("  ", message)
+        if not status:
+            print(color("red", f"[Status] Tag {process_stats(i, missing_tags_length)} : '{tag}'"))
+            print(color("red", f"   --> {message}"))
             continue
-            
-        print(f"Tag {process_stats(i, missing_tags_length)} Added : '{tag}'")
         
-    return
-
-
-    # print("len db_tag_map : ", len(db_tag_map))
-    # print("-----------------------------------------------------------")
-    # print("len scrap_tags : ", len(scrap_tags))
-    # print("-----------------------------------------------------------")
-    # print("len missing_tags : ", len(missing_tags))
+        print(color("green", "[Status]"), f"Tag {process_stats(i, missing_tags_length)} : '{tag}'")
     
-def import_products(base_command, libros, db_categories_map, db_tag_map, db_product_map, categories_dic_map, wordpress_url):
-
+    end_import = time.time()
+    
+    print(color("cyan", f"\n[Status] Process completed in {verbose_time(end_import - start_import)}"))   
+    
+    return
+    
+def import_products(base_command, libros, db_categories_map, db_tag_map, db_product_map, categories, wordpress_url):
+    
+    print(color("title_card", " Script "), "Starting the", color("blue",f"Product"), "import process!\n")
+    
+    start_import = time.time()  
+    
+    categories_dic_map = {
+        "book": categories[0],
+        "ebook": categories[1]
+    }   
+    
     libros_length = len(libros)
     
-    print("-------------------------- Importing/Updating Products --------------------------")
     
     for i, libro in enumerate(libros, start=1):
 
@@ -216,25 +227,39 @@ def import_products(base_command, libros, db_categories_map, db_tag_map, db_prod
         [status, message] = execute_command(cli)
                 
         if status is False:
-            action = "ERROR"
+            print(color("red", f"[Status] Book {process_stats(i, libros_length)} - {action} - ERROR : ({product_ean}, {product_name})"))
+            print(color("red", f"   --> {message}"))
             continue
         
-        product_name = product_name[:90] + "..." if len(product_name) > 90 else product_name
+        product_name = product_name[:70] + "..." if len(product_name) > 70 else product_name
         
-        print(f"Book {process_stats(i, libros_length)} - {action} : ({product_ean}, {product_name})")  
-        if status is False:
-            print("  ", message)   
-        
+        print(color("green", "[Status]"), f"Book {process_stats(i, libros_length)} - {action} : ({product_ean}, {product_name})")  
+ 
+            
+    end_import = time.time()
+    
+    print(color("cyan", f"[Status] Process completed in {verbose_time(end_import - start_import)}"))     
+    
 def import_to_wordpress(wordpress_url, wordpress_path, wordpress_user):
     
     base_command = ["wp", f"--path={wordpress_path}", f"--user={wordpress_user}"]
     
+    process_print_division()
+    print(color("title_card", " Script "), "Starting", color("blue",f"Woocommerce"), "update process!")
+    process_print_division()
     
-    print("Loading libros.json")
+    print(color("title_card", " Script "), "Starting the", color("blue",f"Data"), "collection process!")
+    
     with open("libros.json") as file:
         libros = json.load(file)
-
-    libros = [libro for libro in libros if libro["product_type"] == "book" and libro["stock_available"]]
+    if not libros:
+        print(color("red","[Status]"), color("blue", "Scraped data"),"is empty!")
+        return
+    
+    libros = [libro for libro in libros if libro["product_type"] == "book" and libro["stock_available"] > 2 ]
+    
+    if libros:
+        print(color("green","[Status]"), color("blue", "Scraped data"),"successfully extracted!")
     
     db = wp_database()
     db.connect()
@@ -243,19 +268,23 @@ def import_to_wordpress(wordpress_url, wordpress_path, wordpress_user):
     db_tag_map = db.get_all_tags(name_map = True)
 
     db.close()
+
+    print(color("green","[Status]"),"WP database", color("blue", "Categories"), "successfully extracted!")
+    print(color("green","[Status]"),"WP database", color("blue", "Tags"), "successfully extracted!")
+    
+    process_print_division()
     
     categories = ["Libros", "E-Books"]
     
     import_categories(base_command, categories, db_categories_map)
     
-    start_tag_import = time.time()
+    process_print_division()
     
     import_tags(base_command, db_tag_map, libros)
     
-    end_tag_import = time.time()
+    process_print_division()
     
-    tag_import_time = end_tag_import - start_tag_import
-    print("\nTag importation : ", verbose_time(tag_import_time), "\n")
+    print(color("title_card", " Script "), "Restarting the", color("blue",f"Data"), "collection process!")
     
     db.connect()
     db_categories_map = db.get_all_categories(name_map = True)
@@ -263,23 +292,37 @@ def import_to_wordpress(wordpress_url, wordpress_path, wordpress_user):
     db_product_map = db.get_all_products(unique_key_map = True)
     db.close()
     
-    start_product_import = time.time()
+    if (not db_categories_map) or (not db_tag_map):
+        print(color("red","[Status]"),"WP database", color("blue", "Categories"), "or", color("blue", "Tags"), "are empty!")
+        print(color("red", f"   --> WP database categories length: {len(db_categories_map)}"))
+        print(color("red", f"   --> WP database tags length: {len(db_tag_map)}"))
+        return
     
-    categories_dic_map = {
-        "book": categories[0],
-        "ebook": categories[1]
-    }   
-    import_products(base_command, libros, db_categories_map, db_tag_map, db_product_map, categories_dic_map, wordpress_url)
+
+    print(color("green","[Status]"),"WP database", color("blue", "Categories"), "successfully extracted!")
+
+    print(color("green","[Status]"),"WP database", color("blue", "Tags"), "successfully extracted!")
+
+    print(color("green","[Status]"),"WP database", color("blue", "Products"), "successfully extracted!")
     
-    end_product_import = time.time()
+    process_print_division()
     
-    product_import_time = end_product_import - start_product_import
-    print("\nProduct importation : ", verbose_time(product_import_time), "\n")
+    import_products(base_command, libros, db_categories_map, db_tag_map, db_product_map, categories, wordpress_url)
+    
+    process_print_division()
+    
 
 if __name__ == "__main__":
+    
+    start_time = time.time()
+    
     load_dotenv()
     wordpress_url = os.getenv("WORDPRESS_URL")
     wordpress_path = os.getenv("WORDPRESS_PATH")
     wordpress_user = os.getenv("WORDPRESS_USER")
 
     import_to_wordpress(wordpress_url, wordpress_path, wordpress_user)
+    
+    end_time = time.time()
+    
+    print(color("cyan", f"[Status] Process completed in {verbose_time(end_time - start_time)}"))
