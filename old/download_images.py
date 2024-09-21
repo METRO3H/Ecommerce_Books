@@ -49,16 +49,16 @@ def Get_Images():
     for item in data:
         # Verificar si 'mainImg' está presente en el item
         if 'mainImg' in item and item["product_type"] == "book" and item["stock_available"]:
-            
+
             image_url = item['mainImg']
             book_name = item["titleFriendly"]
             product_id = item["id"]
-            
+
             if image_url is None:
                 #print(product_id, " - ", book_name, " - ", image_url)
                 none_counter += 1
                 continue
-            
+
 
             images.append({
                 "book_name" : book_name,
@@ -66,9 +66,9 @@ def Get_Images():
                 "URL" : image_url,
                 "product_id" : product_id
             })
-            
+
     #print("None : ", none_counter)
-    
+
     return images
 
 #LE FALTA
@@ -82,13 +82,13 @@ def filter_images(images):
     """
     cursor.execute(query)
     saved_images = cursor.fetchall()
-    
+
     conn.close()
-    
+
     columns = [description[0] for description in cursor.description]
-    
+
     saved_images_dictionary = []
-    
+
     for saved_image in saved_images:
         dict_row = dict(zip(columns, saved_image))
         saved_images_dictionary.append(dict_row)
@@ -96,13 +96,13 @@ def filter_images(images):
     # for i in range(10):
     #     print("Images : ", json.dumps(images[i], indent=2))
     #     print("Saved images : ", json.dumps(saved_images_dictionary[i], indent=2))
-        
+
     # missing_images = [item for item in images if item not in saved_images_dictionary]
-    
+
     saved_product_ids = {item['product_id'] for item in saved_images_dictionary}
-    
+
     missing_images  = [item for item in images if item['product_id'] not in saved_product_ids]
-    
+
     return missing_images
 
 def insert_images(images):
@@ -116,19 +116,19 @@ def insert_images(images):
     """
     total_rows_inserted = 0
     for image in images:
-        
+
         book_name = image["book_name"]
         file_name = image["file_name"]
         URL = image['URL']
         product_id = image["product_id"]
-        
+
         cursor.execute(query, (book_name, file_name, URL, product_id,))
-        
+
         total_rows_inserted += cursor.rowcount
-        
+
     conn.commit()
     conn.close()
-    
+
     return total_rows_inserted
 
 output_folder = 'images'
@@ -139,7 +139,7 @@ message = f"There are {missing_images_length} images to download"
 
 if missing_images == 0:
     exit
-    
+
 
 
 successful_downloads = []
@@ -149,32 +149,32 @@ async def main():
     global successful_downloads, failed_downloads, counter
     async with aiohttp.ClientSession() as session:
         for image in missing_images:
-            
+
             result = await Download_Image(image, output_folder, session)
-            
+
             if result is False:
                 failed_downloads.append(image)
                 continue
-            
+
             counter += 1
-            
+
             print("Download", counter,"/", missing_images_length)
-            
+
             successful_downloads.append(image)
-    
-            
+
+
     total_rows_inserted = insert_images(successful_downloads)        
-    
+
     percentage = 100
-    
+
     if missing_images_length != 0:
         percentage = round((counter/missing_images_length)*100, 1)
-    
+
     print(percentage,"% of the images were downloaded")      
-    
+
     print(total_rows_inserted, "covers were saved in the database")
-    
+
     failed_downloads_json = json.dumps(failed_downloads, indent=2) 
-    
+
     print("Missing images : ", failed_downloads_json)        
 asyncio.run(main())          

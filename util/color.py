@@ -11,9 +11,9 @@ def color(option, message):
         "cyan": "96m",
     }
     option_selected = option_list.get(option, None)
-    
+
     result = f"\033[{option_selected}{message}\033[0m" if option_selected else message
-    
+
     return result
 
 def process_print_division():

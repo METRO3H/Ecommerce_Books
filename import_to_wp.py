@@ -13,32 +13,32 @@ from dotenv import load_dotenv
 
 def add_arg(cli: list[str], key: str, value: str) -> None:
     cli.append(f"--{key}={value}")
-    
+
     # full_command = " ".join(cli)
     # print(full_command)
 
 def import_categories(wordpress_path, wordpress_user):
-    
+
     categories = ["Libros", "E-Books"]
-    
+
     for category in categories:
-        
+
         print(f"Adding category '{category}'")
-        
+
         cli = ["wp", f"--path={wordpress_path}", f"--user={wordpress_user}", "wc", "product_cat", "create", "--porcelain"]
-        
+
         add_arg(cli, "name", category)
-        
+
         process = subprocess.Popen(cli, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         process.wait()
-        
+
         if process.returncode != 0:
             error = process.stderr.read()
             print(error.decode())
             continue
 
-        
+
 
 def import_to_wordpress(wordpress_url, wordpress_path, wordpress_user):
     print("Loading libros.json")
@@ -74,8 +74,8 @@ def import_to_wordpress(wordpress_url, wordpress_path, wordpress_user):
     try:
         print("Importing categories")
         import_categories(wordpress_path, wordpress_user)
-        
-        
+
+
         print("Importing tags")
         quitting = False
         for i, libro in enumerate(libros, 1):
@@ -89,25 +89,25 @@ def import_to_wordpress(wordpress_url, wordpress_path, wordpress_user):
                 if str(tag_id) in tag_map:
                     continue
                 print(f"Adding tag '{tag_name}'")
-                
+
                 cli = ["wp", f"--path={wordpress_path}", f"--user={wordpress_user}", "wc", "product_tag", "create", "--porcelain"]
-                
-                
+
+
                 add_arg(cli, "name", tag_name)
-                
+
                 process = subprocess.Popen(cli, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
                 process.wait()
-                
+
                 if process.returncode != 0:
                     error = process.stderr.read()
                     print(error.decode())
                     continue
                     # quitting = True
                     # break
-                    
+
                 output = process.stdout.read().decode()
-                
+
                 if output:
                     tag_map[str(tag_id)] = output.strip()
                     with open("tag_map.json", "w") as file:
@@ -129,21 +129,21 @@ def import_to_wordpress(wordpress_url, wordpress_path, wordpress_user):
             else:
                 print(f"Adding book {libro['titleFriendly']}")
                 cli = ["wp", f"--path={wordpress_path}", f"--user={wordpress_user}", "wc", "product", "create", "--porcelain"]
-            
-            
+
+
             for key, value in arg_map.items():
                 libro_value = libro[value]
-                
+
                 # if key != "stock_quantity":
                 #     libro_value = f"'{libro_value}'"
-                
+
                 add_arg(cli, key, libro_value)
 
 
             description = f"'{libro['book'].get('description', '')}'"
             regular_price = libro["prices"].get("sale", "")
             sale_price = libro["prices"].get("saleSpecialDiscount", "")
-            
+
             if description is not None:
                 add_arg(cli, "description", description)
             if regular_price is not None:
@@ -153,37 +153,37 @@ def import_to_wordpress(wordpress_url, wordpress_path, wordpress_user):
             add_arg(cli, "type", "simple")
             original_image_url = libro["mainImg"]
             if original_image_url is not None:
-                
+
                 image_filename = urlsplit(original_image_url).path.lstrip("/")
                 image_path = f"{wordpress_url}/wp-content/uploads/manual_uploads/{image_filename}"
                 image_param = json.dumps([{'src': image_path}])
                 add_arg(cli, "images", image_param)
-            
+
             #arreglo a la mala por mientras XD
             categories_map = {
                 "book": 4466,
                 "ebook": 4467
             }
-            
+
             if libro.get("product_type"):
                 category_param = json.dumps([{'id': categories_map.get(libro["product_type"])}])
                 add_arg(cli, "categories", category_param)
-                
-            
-            
-            
+
+
+
+
             if libro.get("themes"):
                 tags_param = json.dumps([{'id': tag_map[str(tag_id)]} for tag_id in libro['themes']])
                 # tags_param = json.dumps([{'id': 2408}])
                 add_arg(cli, "tags", tags_param)
-            
+
             # full_command = " ".join(cli)
             # print(full_command)
-            
+
             process = subprocess.Popen(cli, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            
+
             process.wait()
-            
+
             if process.returncode != 0:
                 error = process.stderr.read()
                 print(error.decode())
