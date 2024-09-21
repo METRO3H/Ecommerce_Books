@@ -13,15 +13,15 @@ class wp_database:
             'password': os.getenv("DB_PASSWORD"),
             'raise_on_warnings': True
         }
-        
+
         db_socket = os.getenv("DB_SOCKET")
         db_port = os.getenv("DB_PORT")
-        
+
         if db_socket:
             self.config["unix_socket"] = db_socket
         else:
             self.config["port"] = db_port
-            
+
         self.connection = None
 
     def connect(self):
@@ -41,16 +41,16 @@ class wp_database:
             result = cursor.fetchall()
 
             return result
-        
+
         except Error:
             print(f'Error al ejecutar la consulta: {Error}')
             return None
         finally:
             if cursor:
                 cursor.close()
-                
+
     def get_all_tags(self, name_map = False, dictionary = False):
-        
+
         query = """-- sql
             SELECT wp_terms.name, wp_terms.term_id
             FROM wp_terms 
@@ -58,32 +58,32 @@ class wp_database:
             WHERE wp_term_taxonomy.taxonomy = 'product_tag'
         ;
         """
-         
+
         result = self.execute_fetch_all(query, dictionary)
-        
+
         if name_map:
             result = {html.unescape(item[0]): item[1] for item in result}
-                
+
         return result
-    
+
     def get_all_categories(self, name_map = False, dictionary = False):
-        
+
         query = """-- sql
             SELECT wp_terms.name, wp_term_taxonomy.term_id FROM `wp_term_taxonomy`
             JOIN wp_terms ON wp_terms.term_id = wp_term_taxonomy.term_id
             WHERE wp_term_taxonomy.taxonomy = 'product_cat'
         ;
         """
-    
+
         result = self.execute_fetch_all(query, dictionary)
-        
+
         if name_map:
             result = {html.unescape(item[0]): item[1] for item in result}
-                
+
         return result
-    
+
     def get_all_products(self, unique_key_map=False):
-    
+
         query = """-- sql
             SELECT ID, post_title, meta_key, meta_value AS "ean" FROM `wp_posts` 
             JOIN wp_postmeta ON wp_postmeta.post_id = wp_posts.ID
@@ -92,20 +92,20 @@ class wp_database:
         ;
         """
         result = self.execute_fetch_all(query, dictionary = True) 
-        
+
         if unique_key_map:
             tuple_map = {}
             for product in result:
                 key = (product["ean"], html.unescape(product["post_title"]))
                 value = product["ID"] 
-                
+
                 tuple_map[key] = value
-                
+
             result = tuple_map
-        
+
         return result
-    
-    
+
+
     def close(self):
         if self.connection is not None and self.connection.is_connected():
             self.connection.close()
@@ -114,7 +114,7 @@ class wp_database:
 
 if __name__ == "__main__":
     db = wp_database()
-    
+
     query = """-- sql
     SELECT wp_terms.name, wp_terms.term_id
     FROM wp_terms 
@@ -125,5 +125,5 @@ if __name__ == "__main__":
     result = db.execute_fetch_all(query, dictionary=True)
     if result:
         print(result)
-        
+
     db.close()

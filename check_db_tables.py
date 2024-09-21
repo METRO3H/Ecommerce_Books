@@ -27,7 +27,7 @@ def main():
         password=os.getenv("DB_PASSWORD"),
         raise_on_warnings=True
     )
-    
+
     # Obtener el estado inicial de las tablas
     cursor = conn.cursor()
     initial_status = get_table_row_counts(cursor)
@@ -55,7 +55,7 @@ def main():
     # Comparar los estados inicial y final
     changes = {}
     unchanged = {}
-    
+
     all_tables = set(initial_status.keys()).union(set(final_status.keys()))
     for table in all_tables:
         initial_count = initial_status.get(table, None)
@@ -84,7 +84,7 @@ def main():
         print("\n---------------- Tablas no afectadas: ----------------\n")
         for table, status in unchanged.items():
             print(f"Tabla: {table}")
-            
+
 
     cursor.close()
     conn.close()
