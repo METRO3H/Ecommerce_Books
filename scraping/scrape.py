@@ -5,7 +5,6 @@ from pathlib import Path
 
 headers = {
     "Host": "api.axon.es",
-    # "User-Agent": "",
     "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:123.0) Gecko/20100101 Firefox/123.0",
     "Accept": "*/*",
     "Accept-Language": "en-US,en;q=0.5",
@@ -13,7 +12,6 @@ headers = {
     "Referer": "https://www.axon.es/",
     "content-type": "application/json",
     "authorization": "",
-    # "Content-Length": "2258",
     "Origin": "https://www.axon.es",
     "Connection": "keep-alive",
     "Sec-Fetch-Dest": "empty",
