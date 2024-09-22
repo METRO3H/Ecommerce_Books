@@ -2,13 +2,14 @@ import json
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
 from pathlib import Path
+import gzip
 
 headers = {
     "Host": "api.axon.es",
     "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:123.0) Gecko/20100101 Firefox/123.0",
     "Accept": "*/*",
     "Accept-Language": "en-US,en;q=0.5",
-    # "Accept-Encoding": "gzip, deflate, br",
+    "Accept-Encoding": "gzip",
     "Referer": "https://www.axon.es/",
     "content-type": "application/json",
     "authorization": "",
@@ -45,7 +46,11 @@ def scrape(query_limit=1000):
             variables["skip"] = initial_skip + accumulated_skip
             request = Request(endpoint, data=json.dumps(payload, separators=(",", ":")).encode(), headers=headers)
             with urlopen(request) as response:
-                result = json.loads(response.read())
+                if response.headers["Content-Encoding"] == "gzip":
+                    with gzip.GzipFile(fileobj=response) as decompressed_file:
+                        result = json.loads(decompressed_file.read())
+                else:
+                    result = json.loads(response.read())
             if not result["data"]["books"]:
                 break
             else:
