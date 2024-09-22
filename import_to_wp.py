@@ -51,7 +51,7 @@ def normalize_string(string_arg):
 
 def import_categories(base_command, categories, db_categories_map):
 
-    print(color("title_card", " Script "), "Starting the", color("blue",f"Category"), "import process!")
+    print(color("title_card", " Script "), "Starting the", color("blue","Category"), "import process!")
 
     start_import = time.time()
 
@@ -87,7 +87,7 @@ def import_categories(base_command, categories, db_categories_map):
 
 def import_tags(base_command, db_tag_map, libros):
 
-    print(color("title_card", " Script "), "Starting the", color("blue",f"Tag"), "import process!")
+    print(color("title_card", " Script "), "Starting the", color("blue","Tag"), "import process!")
 
     start_import = time.time()
     scrap_tags = set()
@@ -131,7 +131,7 @@ def import_tags(base_command, db_tag_map, libros):
 
 def import_products(base_command, libros, db_categories_map, db_tag_map, db_product_map, categories, wordpress_url):
 
-    print(color("title_card", " Script "), "Starting the", color("blue",f"Product"), "import process!\n")
+    print(color("title_card", " Script "), "Starting the", color("blue","Product"), "import process!\n")
 
     start_import = time.time()
 
@@ -239,10 +239,10 @@ def import_to_wordpress(wordpress_url, wordpress_path, wordpress_user):
     base_command = ["wp", f"--path={wordpress_path}", f"--user={wordpress_user}"]
 
     process_print_division()
-    print(color("title_card", " Script "), "Starting", color("blue",f"Woocommerce"), "update process!")
+    print(color("title_card", " Script "), "Starting", color("blue","Woocommerce"), "update process!")
     process_print_division()
 
-    print(color("title_card", " Script "), "Starting the", color("blue",f"Data"), "collection process!")
+    print(color("title_card", " Script "), "Starting the", color("blue","Data"), "collection process!")
 
     with open("libros.json") as file:
         libros = json.load(file)
@@ -278,7 +278,7 @@ def import_to_wordpress(wordpress_url, wordpress_path, wordpress_user):
 
     process_print_division()
 
-    print(color("title_card", " Script "), "Restarting the", color("blue",f"Data"), "collection process!")
+    print(color("title_card", " Script "), "Restarting the", color("blue","Data"), "collection process!")
 
     db.connect()
     db_categories_map = db.get_all_categories(name_map = True)
