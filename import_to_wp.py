@@ -18,8 +18,8 @@ import time
 def arg(key: str, value: str) -> str:
     return f"--{key}={value}"
 
-def add_metadata_arg(metadata_list, key, value):
-    metadata_list.append({"key": key, "value": value})
+def metadata(key, value):
+    return {"key": key, "value": value}
 
 def execute_command(cli):
     try:
@@ -208,9 +208,9 @@ def import_products(base_command, libros, db_categories_map, db_tag_map, db_prod
         authors_list = [author.get("name") for author in libro["book"].get("authors")]
         authors_list = json.dumps(authors_list)
 
-        add_metadata_arg(metadata_list, "_author", authors_list)
+        metadata_list.append(metadata("_author", authors_list))
 
-        add_metadata_arg(metadata_list, "_ean", product_ean)
+        metadata_list.append(metadata("_ean", product_ean))
 
         metadata_list = json.dumps(metadata_list)
 
