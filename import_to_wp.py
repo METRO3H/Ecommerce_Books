@@ -15,11 +15,8 @@ from util.color import color, process_print_division
 import re
 import time
 
-def add_arg(cli: list[str], key: str, value: str) -> None:
-    cli.append(f"--{key}={value}")
-
-    # full_command = " ".join(cli)
-    # print(full_command)
+def arg(key: str, value: str) -> str:
+    return f"--{key}={value}"
 
 def add_metadata_arg(metadata_list, key, value):
     metadata_list.append({"key": key, "value": value})
@@ -71,7 +68,7 @@ def import_categories(base_command, categories, db_categories_map):
 
         cli = base_command + ["wc", "product_cat", "create", "--porcelain"]
 
-        add_arg(cli, "name", category)
+        cli.append(arg("name", category))
 
         [status, message] = execute_command(cli)
 
@@ -115,7 +112,7 @@ def import_tags(base_command, db_tag_map, libros):
 
         cli = base_command + ["wc", "product_tag", "create", "--porcelain"]
 
-        add_arg(cli, "name", tag)
+        cli.append(arg("name", tag))
 
         [status, message] = execute_command(cli)
 
@@ -162,22 +159,22 @@ def import_products(base_command, libros, db_categories_map, db_tag_map, db_prod
         else:
             cli.append("create"); action = "Created"
 
-        add_arg(cli, "name", product_name)
-        add_arg(cli, "slug", libro["titleFriendly"])
-        add_arg(cli, "stock_quantity", libro["stock_available"])
+        cli.append(arg("name", product_name))
+        cli.append(arg("slug", libro["titleFriendly"]))
+        cli.append(arg("stock_quantity", libro["stock_available"]))
 
         description = f"'{libro['book'].get('description', '')}'"
         regular_price = libro["prices"].get("sale", "")
         sale_price = libro["prices"].get("saleSpecialDiscount", "")
 
         if description:
-            add_arg(cli, "description", description)
+            cli.append(arg("description", description))
         if regular_price:
-            add_arg(cli, "regular_price", regular_price)
+            cli.append(arg("regular_price", regular_price))
         if sale_price:
-            add_arg(cli, "sale_price", sale_price)
+            cli.append(arg("sale_price", sale_price))
 
-        add_arg(cli, "type", "simple")
+        cli.append(arg("type", "simple"))
 
         original_image_url = libro["mainImg"]
 
@@ -186,7 +183,7 @@ def import_products(base_command, libros, db_categories_map, db_tag_map, db_prod
             image_filename = urlsplit(original_image_url).path.lstrip("/")
             image_path = f"{wordpress_url}/wp-content/uploads/manual_uploads/{image_filename}"
             image_param = json.dumps([{'src': image_path}])
-            add_arg(cli, "images", image_param)
+            cli.append(arg("images", image_param))
 
 
         product_category = libro.get("product_type")
@@ -196,7 +193,7 @@ def import_products(base_command, libros, db_categories_map, db_tag_map, db_prod
             category_dic = categories_dic_map.get(product_category)
             category_id = db_categories_map.get(category_dic)
             category_param = json.dumps([{'id': str(category_id)}])
-            add_arg(cli, "categories", category_param)
+            cli.append(arg("categories", category_param))
 
         product_tags = libro.get("themes_text")
 
@@ -204,7 +201,7 @@ def import_products(base_command, libros, db_categories_map, db_tag_map, db_prod
             tags_param = [{'id': str(db_tag_map[normalize_string(tag)])} for tag in product_tags]
             tags_param = json.dumps(tags_param)
 
-            add_arg(cli, "tags", tags_param)
+            cli.append(arg("tags", tags_param))
 
 
         metadata_list = []
@@ -217,7 +214,7 @@ def import_products(base_command, libros, db_categories_map, db_tag_map, db_prod
 
         metadata_list = json.dumps(metadata_list)
 
-        add_arg(cli, "meta_data", metadata_list)
+        cli.append(arg("meta_data", metadata_list))
 
         cli.append("--porcelain")
 
