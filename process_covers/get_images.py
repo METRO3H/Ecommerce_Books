@@ -11,7 +11,7 @@ def Get_Images():
     # Iterar sobre cada item en tus datos
     for item in data:
         # Verificar si 'mainImg' está presente en el item
-        if 'mainImg' in item and item["product_type"] == "book" and item["stock_available"]:
+        if 'mainImg' in item:
             
             image_url = item['mainImg']
             book_name = item["titleFriendly"]
