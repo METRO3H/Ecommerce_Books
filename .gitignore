@@ -3,4 +3,3 @@ libros.json
 __pycache__
 database.db
 .env
-*.json
