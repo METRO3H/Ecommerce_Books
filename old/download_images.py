@@ -110,7 +110,7 @@ def insert_images(images):
     cursor = conn.cursor()
     query = """
     --sql
-    INSERT INTO covers (book_name, file_name, url, product_id) 
+    INSERT INTO covers (book_name, file_name, url, product_id)
     VALUES (?, ?, ?, ?)
     ;
     """
@@ -163,18 +163,18 @@ async def main():
             successful_downloads.append(image)
 
 
-    total_rows_inserted = insert_images(successful_downloads)        
+    total_rows_inserted = insert_images(successful_downloads)
 
     percentage = 100
 
     if missing_images_length != 0:
         percentage = round((counter/missing_images_length)*100, 1)
 
-    print(percentage,"% of the images were downloaded")      
+    print(percentage,"% of the images were downloaded")
 
     print(total_rows_inserted, "covers were saved in the database")
 
-    failed_downloads_json = json.dumps(failed_downloads, indent=2) 
+    failed_downloads_json = json.dumps(failed_downloads, indent=2)
 
-    print("Missing images : ", failed_downloads_json)        
-asyncio.run(main())          
+    print("Missing images : ", failed_downloads_json)
+asyncio.run(main())

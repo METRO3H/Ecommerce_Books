@@ -6,7 +6,7 @@ def insert_images(images):
     cursor = conn.cursor()
     query = """
     --sql
-    INSERT INTO covers (book_name, file_name, url, product_id) 
+    INSERT INTO covers (book_name, file_name, url, product_id)
     VALUES (?, ?, ?, ?)
     ;
     """
