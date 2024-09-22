@@ -1,6 +1,7 @@
 import json
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
+from pathlib import Path
 
 headers = {
     "Host": "api.axon.es",
@@ -22,152 +23,9 @@ headers = {
 }
 
 endpoint = "https://api.axon.es/graphql"
-query = '''
-  query currentProducts($limit: Int, $skip: Int!, $sort: String, $order: Int, $product_type: [String], $lang: [String], $rangePrice: RangePrice, $areas_of_interest: [Int], $areas_of_interest_text: String, $tags: [TagsInput], $type: String, $searchGeneral: String, $prox: Boolean, $area_prox: String, $featured: Boolean, $is_new: Boolean) {
-    books(
-      limit: $limit
-      skip: $skip
-      sort: $sort
-      order: $order
-      product_type: $product_type
-      lang: $lang
-      rangePrice: $rangePrice
-      areas_of_interest: $areas_of_interest
-      areas_of_interest_text: $areas_of_interest_text
-      tags: $tags
-      type: $type
-      searchGeneral: $searchGeneral
-      prox: $prox
-      area_prox: $area_prox
-      featured: $featured
-      is_new: $is_new
-    ) {
-      id
-      _id
-      titleFriendly
-      title
-      ean
-      mainImg
-      ebookContent
-      relatedInfo {
-        _id
-        id
-        product_type
-        priceWithDiscount
-        ean
-        title
-        titleFriendly
-        ebookContent
-        weight
-        prices {
-          sale
-          clearing
-          saleSpecialDiscount
-          ssdFrom
-          ssdTo
-          __typename
-        }
-        book {
-          authors {
-            _id
-            name
-            __typename
-          }
-          pages
-          lang
-          binding
-          __typename
-        }
-        availability {
-          OK
-          msg
-          status
-          __typename
-        }
-        __typename
-      }
-      prices {
-        sale
-        clearing
-        saleSpecialDiscount
-        ssdFrom
-        ssdTo
-        __typename
-      }
-      vat {
-        sale
-        __typename
-      }
-      tags {
-        category
-        items
-        __typename
-      }
-      book {
-        authors {
-          _id
-          name
-          __typename
-        }
-        lang
-        binding
-        # added:
-        description
-        edition {
-          year
-          number
-          month
-          __typename
-        }
-        __typename
-      }
-      product_type
-      priority
-      priority_nov
-      priceWithDiscount
-      not_released
-      # added:
-      stock_available
-      # added:
-      unavailable
-      # more added:
-      group_property_names
-      # brand
-      isVariantGroup
-      themes
-      themes_text
-      # dimensions
-      createdAt
-      has_description
-      has_picture
-      # discount
-      subjects
-      # pics
-      reposition_level
-      # attachments
-      deleted
-      clicks
-      # variant
-      # variantProduct
-      # suscription
-      # variantChildren
-      defaultVariant
-      # prepublication
-      # star
-      # banner
-      # allImg
-      multiplyBookSearch
-      deliveryTime
-      deliveryName
-      lastBuyPrice
-      exchangeRate
-      buyExpenses
-      isNotToPublish
-      sales
-      __typename
-    }
-  }
-'''
+with open(Path("scraping") / "query.graphql") as query_file:
+    query = query_file.read()
+
 variables = {
     "limit": 10,
     "skip": 0,
