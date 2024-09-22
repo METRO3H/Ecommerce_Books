@@ -53,8 +53,8 @@ class wp_database:
 
         query = """-- sql
             SELECT wp_terms.name, wp_terms.term_id
-            FROM wp_terms 
-            JOIN wp_term_taxonomy ON wp_term_taxonomy.term_id = wp_terms.term_id 
+            FROM wp_terms
+            JOIN wp_term_taxonomy ON wp_term_taxonomy.term_id = wp_terms.term_id
             WHERE wp_term_taxonomy.taxonomy = 'product_tag'
         ;
         """
@@ -85,19 +85,19 @@ class wp_database:
     def get_all_products(self, unique_key_map=False):
 
         query = """-- sql
-            SELECT ID, post_title, meta_key, meta_value AS "ean" FROM `wp_posts` 
+            SELECT ID, post_title, meta_key, meta_value AS "ean" FROM `wp_posts`
             JOIN wp_postmeta ON wp_postmeta.post_id = wp_posts.ID
-            WHERE `post_type` = 'product' 
+            WHERE `post_type` = 'product'
             AND wp_postmeta.meta_key = "_ean"
         ;
         """
-        result = self.execute_fetch_all(query, dictionary = True) 
+        result = self.execute_fetch_all(query, dictionary = True)
 
         if unique_key_map:
             tuple_map = {}
             for product in result:
                 key = (product["ean"], html.unescape(product["post_title"]))
-                value = product["ID"] 
+                value = product["ID"]
 
                 tuple_map[key] = value
 
@@ -117,8 +117,8 @@ if __name__ == "__main__":
 
     query = """-- sql
     SELECT wp_terms.name, wp_terms.term_id
-    FROM wp_terms 
-    JOIN wp_term_taxonomy ON wp_term_taxonomy.term_id = wp_terms.term_id 
+    FROM wp_terms
+    JOIN wp_term_taxonomy ON wp_term_taxonomy.term_id = wp_terms.term_id
     WHERE wp_term_taxonomy.taxonomy = 'product_tag'
     ;
     """

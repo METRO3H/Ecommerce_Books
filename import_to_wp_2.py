@@ -11,7 +11,7 @@ from database import wp_database
 from dotenv import load_dotenv
 from util.verbose_timer import verbose_time
 from util.process_stats import process_stats
-from util.color import color, process_print_division 
+from util.color import color, process_print_division
 import re
 import time
 
@@ -35,7 +35,7 @@ def execute_command(cli):
             print(wp_error)
             return [False, wp_error]
 
-        return [True, "Success!"]   
+        return [True, "Success!"]
 
     except Exception as Error:
         print(Error)
@@ -65,7 +65,7 @@ def import_categories(base_command, categories, db_categories_map):
         print(color("green", "[Status] All Expected Categories Found!"))
         return
 
-    missing_categories_length = len(missing_categories) 
+    missing_categories_length = len(missing_categories)
     print()
     for i, category in enumerate(missing_categories, start=1):
 
@@ -84,7 +84,7 @@ def import_categories(base_command, categories, db_categories_map):
 
     end_import = time.time()
 
-    print(color("cyan", f"\n[Status] Process completed in {verbose_time(end_import - start_import)}")) 
+    print(color("cyan", f"\n[Status] Process completed in {verbose_time(end_import - start_import)}"))
 
     return
 
@@ -128,7 +128,7 @@ def import_tags(base_command, db_tag_map, libros):
 
     end_import = time.time()
 
-    print(color("cyan", f"\n[Status] Process completed in {verbose_time(end_import - start_import)}"))   
+    print(color("cyan", f"\n[Status] Process completed in {verbose_time(end_import - start_import)}"))
 
     return
 
@@ -136,12 +136,12 @@ def import_products(base_command, libros, db_categories_map, db_tag_map, db_prod
 
     print(color("title_card", " Script "), "Starting the", color("blue",f"Product"), "import process!\n")
 
-    start_import = time.time()  
+    start_import = time.time()
 
     categories_dic_map = {
         "book": categories[0],
         "ebook": categories[1]
-    }   
+    }
 
     libros_length = len(libros)
 
@@ -233,12 +233,12 @@ def import_products(base_command, libros, db_categories_map, db_tag_map, db_prod
 
         product_name = product_name[:70] + "..." if len(product_name) > 70 else product_name
 
-        print(color("green", "[Status]"), f"Book {process_stats(i, libros_length)} - {action} : ({product_ean}, {product_name})")  
+        print(color("green", "[Status]"), f"Book {process_stats(i, libros_length)} - {action} : ({product_ean}, {product_name})")
 
 
     end_import = time.time()
 
-    print(color("cyan", f"[Status] Process completed in {verbose_time(end_import - start_import)}"))     
+    print(color("cyan", f"[Status] Process completed in {verbose_time(end_import - start_import)}"))
 
 def import_to_wordpress(wordpress_url, wordpress_path, wordpress_user):
 
