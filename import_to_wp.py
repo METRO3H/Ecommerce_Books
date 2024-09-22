@@ -154,10 +154,12 @@ def import_products(base_command, libros, db_categories_map, db_tag_map, db_prod
         cli = base_command + ["wc", "product"]
 
         if product_id:
-            cli.extend(["update", str(product_id)]); action = "Updated"
+            cli.extend(["update", str(product_id)])
+            action = "Updated"
 
         else:
-            cli.append("create"); action = "Created"
+            cli.append("create")
+            action = "Created"
 
         cli.append(arg("name", product_name))
         cli.append(arg("slug", libro["titleFriendly"]))
