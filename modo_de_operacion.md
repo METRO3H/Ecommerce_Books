@@ -1,16 +1,17 @@
 # Modo de operación
-## 1. fetch_graphql.py
+## 1. `scraping/scrape.py`
 Scrapea todos los productos de axon y los pone en libros.json
 
-## 2. download_images.py
-1. Obtiene las URL posibles a partir de libros.json pero descarta los obtenidos de descargados.db
-2. Descarga asincrónicamente a una carpeta downloads/ en cualquier parte
-3. Corre wp media import downloads/*
-4. Agrega las URL de las imágenes trabajadas a descargados.db
-5. Elimina todo dentro de downloads/
+## 2. `main.py`
+1. Obtiene las URL posibles a partir de libros.json pero descarta las que ya se tienen descargadas (están en database/database.db)
+2. Descarga asincrónicamente a la carpeta images/
+3. Agrega las URL de las imágenes descargadas a database/database.db
 
-## 3. import_to_wordpress.py
-* [Importación con WordPress Importer](https://github.com/woocommerce/woocommerce/issues/21624#issuecomment-873089367)
-* Habrá que escribir un generador del formato de productos de Woocommerce (en XML).
-    1. Extraer libros de la base de datos
-    2. Importarlos con WordPress Importer como en el link del punto anterior
+## 3. ???
+1. Corre wp media import images/* ??
+2. Elimina todo dentro de downloads/ ?
+
+## 4. `import_to_wp_2.py`
+1. Agrega categorías de los productos con `wp-cli` si es que no existen ya en MySQL
+2. Agrega tags de los productos con `wp-cli` si es que no existen ya en MySQL
+3. Agrega/actualiza todos los productos con `wp-cli`
